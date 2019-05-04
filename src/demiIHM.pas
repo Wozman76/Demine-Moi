@@ -16,6 +16,7 @@ procedure menu(var choixMenu : Word; player : Joueur);
 procedure difficulte(player : Joueur; var lignes, colonnes : Word);
 procedure credits();
 procedure nouvellePartie(var fermeture : Boolean; player : Joueur);
+procedure quit(player : Joueur);
 
 IMPLEMENTATION
 
@@ -108,7 +109,14 @@ end;
 procedure montrerCase(grille : Grille; lignes, colonnes : Word; curseur : POS; var nbCasesVidesRestantes : Word);
 begin
 	if grille[curseur.y][curseur.x].estMine then
-		write('*')
+		begin
+			TextBackground(Red);
+			TextColor(Black);
+			write('*');
+			TextBackground(Black);
+			TextColor(LightGray);
+		end
+			
 	else
 		begin
 			GotoXY(2*curseur.x - 1,curseur.y);
@@ -131,7 +139,11 @@ begin
 		else
 		begin
 			grille[curseur.y][curseur.x].estMarquee := True;
+			TextBackground(White);
+			TextColor(Black);
 			write('@');
+			TextBackground(Black);
+			TextColor(LightGray);
 			if grille[curseur.y][curseur.x].estMine then
 				nbMinesMarquees := nbMinesMarquees + 1;
 		end;
@@ -312,6 +324,13 @@ begin
 end;
 
 
+procedure quit(player : Joueur);
+begin
+	writeln;
+	writeln('Au revoir, ' + player.nom);
+	sleep(3000);
+end;
+
 
 procedure nouvellePartie(var fermeture : Boolean; player : Joueur);
 var choixFin : Boolean;
@@ -342,12 +361,7 @@ begin
 	until choixFin;
 	
 	if fermeture then
-		begin
-			writeln;
-			writeln('Au revoir, ' + player.nom);
-		end;
-
-
+		quit(player);
 end;
 
 	

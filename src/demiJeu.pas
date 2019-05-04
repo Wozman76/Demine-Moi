@@ -14,7 +14,7 @@ procedure lancementPartie(var player : Joueur; var fermeture : Boolean);
 
 
 IMPLEMENTATION
-uses demiIHM, crt;
+uses demiIHM, crt, sysutils;
 
 
 procedure compterMines(i, j, lignes, colonnes : Word; var grille : Grille);
@@ -317,7 +317,7 @@ begin
 
 	until fin;
 	
-	
+	sleep(2000);
 	clrscr;
 	GotoXY(1,1);
 	if gagne then

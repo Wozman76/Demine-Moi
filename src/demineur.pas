@@ -32,8 +32,7 @@ BEGIN
 				3 : credits();
 				4 : begin
 						fermeture := True;
-						writeln;
-						writeln('Au revoir, ' + player.nom);
+						quit(player);
 					end;
 			end;
 			
