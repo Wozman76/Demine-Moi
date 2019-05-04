@@ -56,6 +56,7 @@ procedure affichageGrille(grille : Grille; lignes, colonnes : Word);
 var i, j : Word;
 begin
 	GotoXY(1,1);
+
 	for i := 1 to lignes do
 		begin
 			for j := 1 to colonnes do
@@ -65,10 +66,17 @@ begin
 					else 
 						write('*' + ' ')
 				else 
-					write('#' + ' ');
+					begin
+						TextBackground(Green);
+						TextColor(Black);
+						write('#' + ' ');
+						TextBackground(Black);
+						TextColor(LightGray);
+					end;
 			writeln;
 
 		end;
+
 end;
 
 
@@ -112,7 +120,7 @@ begin
 		begin
 			TextBackground(Red);
 			TextColor(Black);
-			write('*');
+			write('* ');
 			TextBackground(Black);
 			TextColor(LightGray);
 		end
@@ -132,7 +140,7 @@ begin
 		if grille[curseur.y][curseur.x].estMarquee then
 		begin
 			grille[curseur.y][curseur.x].estMarquee := False;
-			write('#');
+			write('# ');
 			if grille[curseur.y][curseur.x].estMine then
 				nbMinesMarquees := nbMinesMarquees - 1;
 		end
@@ -141,7 +149,7 @@ begin
 			grille[curseur.y][curseur.x].estMarquee := True;
 			TextBackground(White);
 			TextColor(Black);
-			write('@');
+			write('@ ');
 			TextBackground(Black);
 			TextColor(LightGray);
 			if grille[curseur.y][curseur.x].estMine then
