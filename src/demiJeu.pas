@@ -14,7 +14,7 @@ procedure lancementPartie(var player : Joueur; var fermeture : Boolean);
 
 
 IMPLEMENTATION
-uses demiIHM, crt, sysutils;
+uses demiIHM, demiScore, crt, sysutils, DateUtils;
 
 
 procedure compterMines(i, j, lignes, colonnes : Word; var grille : Grille);
@@ -257,14 +257,36 @@ end;
 
 
 procedure lancementPartie(var player : Joueur; var fermeture : Boolean);
-var lignes, colonnes, nbMinesMarquees, nbMinesGrille, nbCasesVidesrestantes : Word;
-	
+var niveau, nbTemps, lignes, colonnes, nbMinesMarquees, nbMinesGrille, nbCasesVidesrestantes : Word;
+	tempsDeb : TDateTime;
+	temps : LongWord;
 	curseur : POS;
 	grille2 : Grille;
 	marquage, fin, gagne : Boolean;
+	tabTemps : HighTemps;
 	
 begin
-	difficulte(player, lignes, colonnes);
+	difficulte(player, niveau);
+	
+	afficherHighTemps(player, tabTemps, nbTemps, niveau);
+	sleep(3000);
+	
+	case niveau of
+		1 : begin
+				lignes := 9;
+				colonnes := 9;
+			end;
+		2 : begin
+				lignes := 15;
+				colonnes := 15;
+			end;
+		3 : begin
+				lignes := 20;
+				colonnes := 20;
+			end;
+	end;
+	
+	
 
 	
 	curseur.x := 1;
@@ -282,15 +304,18 @@ begin
 	
 	//affichageGrilleEstMine(grille2, lignes, colonnes);
 	//affichageGrilleNbMines(grille2, lignes, colonnes);
-	
-	affichageGrille(grille2, lignes, colonnes);
 	affichageInterface(lignes, colonnes);
+	affichageGrille(grille2, lignes, colonnes);
+	
 	
 	choixCase(lignes, colonnes, curseur, marquage);
 	initialisationGrille(lignes, colonnes, grille2, curseur, nbMinesGrille, nbCasesVidesrestantes);
 	casesAdjacentes(curseur, lignes, colonnes, grille2, nbCasesVidesrestantes);
 	affichageGrille(grille2, lignes, colonnes);
 	montrerCase(grille2, lignes, colonnes, curseur, nbCasesVidesrestantes);
+	
+	
+	tempsDeb := Now;
 	
 	repeat
 		
@@ -312,13 +337,29 @@ begin
 
 	until fin;
 	
+	
+	temps := MilliSecondsBetween(Now, tempsDeb);
+	
+	
+
+	
 	sleep(2000);
 	clrscr;
 	GotoXY(1,1);
 	if gagne then
-		writeln('Vous avez gagne!')
+	begin
+		writeln('Vous avez gagne!');
+		stockageTemps(player, temps, tabTemps, nbTemps, niveau);	
+	end
 	else
 		writeln('Vous avez perdu!');
+		
+	writeln;
+	afficherHighTemps(player, tabTemps, nbTemps, niveau);
+	afficherTemps(temps);
+	sleep(2000);
+		
+		
 	nouvellePartie(fermeture, player);
 end;
 	

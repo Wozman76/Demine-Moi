@@ -13,7 +13,7 @@ procedure montrerCase(grille : Grille; lignes, colonnes : Word; curseur : POS; v
 procedure marquer(var grille : Grille; curseur : POS; var nbMinesMarquees : Word);
 procedure joueur (var player : Joueur);
 procedure menu(var choixMenu : Word; player : Joueur);
-procedure difficulte(player : Joueur; var lignes, colonnes : Word);
+procedure difficulte(player : Joueur; var niveau : Word);
 procedure credits();
 procedure nouvellePartie(var fermeture : Boolean; player : Joueur);
 procedure quit(player : Joueur);
@@ -82,6 +82,7 @@ end;
 
 procedure affichageInterface(lignes, colonnes : Word);
 begin
+	clrscr;
 	GotoXY(2*colonnes - 1 + 10, 1);
 	writeln('- Deplacez-vous avec les fleches');
 	GotoXY(2*colonnes - 1 + 10, 2);
@@ -246,8 +247,8 @@ end;
 
 
 {choix de la difficultée (même pricipe que pour le menu)}
-procedure difficulte(player : Joueur; var lignes, colonnes : Word);
-var niveau, nbDiff, y, j : Word;
+procedure difficulte(player : Joueur; var niveau : Word);
+var nbDiff, y, j : Word;
 	k : TKeyEvent;
 	tab : MenuDiffTab;
 begin
@@ -302,20 +303,7 @@ begin
 	
 	niveau := y - 4;
 	
-	case niveau of
-		1 : begin
-				lignes := 9;
-				colonnes := 9;
-			end;
-		2 : begin
-				lignes := 15;
-				colonnes := 15;
-			end;
-		3 : begin
-				lignes := 20;
-				colonnes := 20;
-			end;
-	end;
+
 	
 	clrscr;
 	

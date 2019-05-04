@@ -11,21 +11,25 @@ Type Cellule = record
 end;
 
 
-Type Grille = array[1..MAX,1..MAX] of Cellule;
-
-
-
-
 Type POS = record
 	x, y : Word;
 end;
 
 Type Joueur = record
 	nom : String;
-	score : Word;
+	temps : LongWord;
 end;
 
+
+
+
+Type Grille = array[1..MAX,1..MAX] of Cellule;
+Type HighTemps = array[1..10] of Joueur;
 Type MenuDiffTab = array[1..10] of String;
+
+
+
+
 
 IMPLEMENTATION
 
