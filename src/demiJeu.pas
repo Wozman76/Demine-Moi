@@ -249,8 +249,8 @@ end;
 
 procedure finDePartie(nbMinesGrille, nbMinesMarquees, nbCasesVidesRestantes : Word; grille : Grille; curseur : POS; var fin, gagne : Boolean);
 begin
-	fin := caseMine(grille, curseur) or ((nbMinesGrille = nbMinesMarquees) and (nbCasesVidesRestantes = 0));
-	gagne := nbMinesGrille = nbMinesMarquees;
+	fin := caseMine(grille, curseur) or (nbCasesVidesRestantes = 0);
+	gagne := (nbCasesVidesRestantes = 0);
 end;
 
 
@@ -302,11 +302,6 @@ begin
 		begin
 			marquer(grille2,curseur,nbMinesMarquees);
 			marquage := False;
-			if nbMinesGrille = nbMinesMarquees then
-			begin
-				fin := True;
-				gagne := True;
-			end;
 		end
 		else
 		begin

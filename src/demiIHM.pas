@@ -120,15 +120,16 @@ begin
 		begin
 			TextBackground(Red);
 			TextColor(Black);
-			write('* ');
+			write('*');
 			TextBackground(Black);
 			TextColor(LightGray);
+			write(' ');
 		end
 			
 	else
 		begin
 			GotoXY(2*curseur.x - 1,curseur.y);
-			write(grille[curseur.y][curseur.x].nbMine);
+			write(grille[curseur.y][curseur.x].nbMine, ' ');
 			nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
 		end;
 end;
@@ -140,7 +141,11 @@ begin
 		if grille[curseur.y][curseur.x].estMarquee then
 		begin
 			grille[curseur.y][curseur.x].estMarquee := False;
-			write('# ');
+			TextBackground(Green);
+			TextColor(Black);
+			write('#' + ' ');
+			TextBackground(Black);
+			TextColor(LightGray);
 			if grille[curseur.y][curseur.x].estMine then
 				nbMinesMarquees := nbMinesMarquees - 1;
 		end
@@ -149,9 +154,10 @@ begin
 			grille[curseur.y][curseur.x].estMarquee := True;
 			TextBackground(White);
 			TextColor(Black);
-			write('@ ');
+			write('@');
 			TextBackground(Black);
 			TextColor(LightGray);
+			write(' ');
 			if grille[curseur.y][curseur.x].estMine then
 				nbMinesMarquees := nbMinesMarquees + 1;
 		end;
