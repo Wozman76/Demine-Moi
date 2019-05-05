@@ -5,6 +5,7 @@ unit demiJeu;
 INTERFACE
 uses demiTypes;
 
+procedure initDossierJeu();
 procedure initialisationGrilleVide(lignes, colonnes : Word; var grille : Grille);
 procedure initialisationGrille(lignes, colonnes : Word; var grille : Grille; curseur : POS; var nbMinesGrille, nbCasesVidesRestantes : Word);
 function caseMine(grille : Grille; curseur : POS) : Boolean;
@@ -14,7 +15,50 @@ procedure lancementPartie(var player : Joueur; var fermeture : Boolean);
 
 
 IMPLEMENTATION
-uses demiIHM, demiScore, crt, sysutils, DateUtils;
+uses demiIHM, demiScore, crt, sysutils, DateUtils, httpsend;
+
+
+
+procedure initDossierJeu();
+var httpSender: THTTPSend;
+	HTTPGetResult : Boolean;
+begin
+
+
+	HTTPGetResult := False;
+	{$ifdef WINDOWS}
+	dossierJeu := GetEnvironmentVariable('APPDATA');
+	{$else}
+	dossierJeu := GetEnvironmentVariable('HOME');
+	{$endif}
+	
+	
+	
+	dossierJeu := dossierJeu + '/DemineMoi';
+	dossierScores := dossierJeu + '/scores/';
+	fichierCredits := dossierJeu + '/credits.txt';
+	
+	
+	if not(DirectoryExists(dossierJeu)) then
+		CreateDir(dossierJeu);
+			
+	if not(DirectoryExists(dossierScores)) then
+		CreateDir(dossierScores);
+		
+	if not(FileExists(fichierCredits)) then
+	begin
+		HTTPSender := THTTPSend.Create;
+		HTTPGetResult := HTTPSender.HTTPMethod('GET', 'http://mdl-anguier.fr/credits.txt');
+		HTTPSender.Document.SaveToFile(fichierCredits);
+		HTTPSender.Free;
+		
+	end;
+		
+end;
+
+
+
+
 
 
 procedure compterMines(i, j, lignes, colonnes : Word; var grille : Grille);

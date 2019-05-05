@@ -9,7 +9,7 @@ var fermeture : Boolean;
 
 BEGIN
 	
-	
+	initDossierJeu;
 	
 	joueur(player);
 

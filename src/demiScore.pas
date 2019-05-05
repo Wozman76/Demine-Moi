@@ -29,13 +29,14 @@ procedure afficherHighTemps(var player : Joueur; var tabTemps : HighTemps; var n
 var fichier : File of Joueur;
 	j : Word;
 	difficulte : String;
-	dossier : AnsiString;
+	fichierScores : AnsiString;
 	
 begin
 
-	nbTemps := 0;
 	
-	dossier := GetEnvironmentVariable('APPDATA');
+
+
+	nbTemps := 0;
 	
 	
 	case niveau of
@@ -45,7 +46,7 @@ begin
 	end;
 	
 	
-	
+	fichierScores := dossierScores + difficulte + '_scores.dat';
 	
 	writeln('Liste des meilleurs scores :');
 	writeln;
@@ -54,16 +55,12 @@ begin
 	writeln;
 	
 	
-	assign(fichier, dossier + '/DemineMoi/scores/' + difficulte + '_scores.dat');  // on assigne le fichier et s'il n'existe pas on le crée (idem pour dossier)
-	if not(DirectoryExists(dossier + '/DemineMoi')) then
-		begin
-			CreateDir(dossier + '/DemineMoi');
-			if not(DirectoryExists(dossier + '/DemineMoi/scores')) then
-				CreateDir(dossier + '/DemineMoi/scores');
-		
-	 
+	assign(fichier, fichierScores);  // on assigne le fichier et s'il n'existe pas on le crée (idem pour dossier)
+	
+	
+	if not(FileExists(fichierScores)) then
 		rewrite(fichier)
-		end
+	
 		
 	else reset(fichier);
 	
@@ -120,10 +117,9 @@ procedure stockageTemps(player : Joueur; temps : LongWord; var tabTemps : HighTe
 var fichier : File of Joueur;
 	j : Integer;
 	difficulte : String;
-	dossier : AnsiString;
+	fichierScores : AnsiString;
 begin
 
-	dossier := GetEnvironmentVariable('APPDATA') + '/DemineMoi/scores/';
 
 
 	case niveau of
@@ -132,11 +128,11 @@ begin
 		3 : difficulte := 'difficile';
 	end;
 
-	
+	fichierScores := dossierScores + difficulte + '_scores.dat';
 
 	player.temps := temps;
 	
-	assign(fichier, dossier + difficulte + '_scores.dat');
+	assign(fichier, fichierScores);
 	
 	
 	//ajoute le score dans le tableau

@@ -310,19 +310,56 @@ begin
 end;
 
 procedure credits();
+var fichier : Text;
+	tab : TabCredit;
+	i, j, k : Word;
+	arret : Boolean;
 begin
-	clrscr;
-	writeln('------------------------------ Demine moi -------------------------------');
-	writeln;
-	writeln('By Wozman');
-	sleep(500);
-	writeln;
-	writeln;
-	writeln('Press space to continue...');
-	while GetKeyEventCode(GetKeyEvent()) <> 14624 do   //tant qu'on appuie pas sur [espace], le programme attend
-		sleep(10);
-					
-	clrscr;
+
+	i := 1;
+	j := 1;
+	
+	
+	arret := False;
+	assign(fichier, fichierCredits);
+	
+
+	reset(fichier);
+	
+	while not(eof(fichier)) do
+		begin
+			readln(fichier, tab[i]);
+			i := i + 1;
+		end;
+	
+	close(fichier);
+	
+	
+	repeat 
+	
+		clrscr;
+		GotoXY(1,1);
+		writeln('------------------------------ I Got Rhythm -------------------------------');
+		GotoXY(1,3);
+		
+		for k := j to j + 20 do
+			begin
+			if tab[k] = 'FIN' then
+					arret := True
+			else writeln(tab[k]);
+			end;
+	
+		sleep(300);
+		j := j + 1;
+	
+	
+	
+	
+	until arret;
+	
+	sleep(3000);
+	
+	
 end;
 
 
