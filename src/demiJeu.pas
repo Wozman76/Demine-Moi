@@ -20,10 +20,10 @@ uses demiIHM, demiScore, crt, sysutils, DateUtils, httpsend;
 
 
 procedure initConfigJeu();
-var HTTPSender: THTTPSend;
+var httpSender: THTTPSend;
 	HTTPGetResult : Boolean;
 begin
-
+	nomJeu := 'DemineMoi';
 
 	HTTPGetResult := False;
 	{$ifdef WINDOWS}
@@ -46,17 +46,14 @@ begin
 		CreateDir(dossierScores);
 	
 	
-	
-	
-	
 	if not(FileExists(fichierCredits)) then
 	begin
-		HTTPGetResult := HTTPSender.HTTPMethod('GET', 'http://mdl-anguier.fr/credits.txt');	
 		HTTPSender := THTTPSend.Create;
+		HTTPGetResult := HTTPSender.HTTPMethod('GET', 'http://mdl-anguier.fr/DemineMoi/ressources/credits.txt');
 		HTTPSender.Document.SaveToFile(fichierCredits);
 		HTTPSender.Free;
-		
-	end;
+
+ 	end;
 		
 end;
 

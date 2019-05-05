@@ -169,7 +169,7 @@ procedure joueur (var player : Joueur);
 begin
 
 	clrscr;
-	writeln('------------------------------ Demine moi -------------------------------');
+	writeln('------------------------------ ' + nomJeu + ' -------------------------------');
 	writeln;
 	writeln('Bonjour ! Quel est votre nom?');
 	writeln;
@@ -195,7 +195,7 @@ begin
 	tab[4] := 'Quitter';
 	
 	clrscr;
-	writeln('------------------------------ Demine moi -------------------------------');
+	writeln('------------------------------ ' + nomJeu + ' -------------------------------');
 	writeln;
 	writeln('Bonjour ' + player.nom + ' ! Que voulez-vous faire ?');
 	writeln;
@@ -262,7 +262,7 @@ begin
 	
 	
 	clrscr;
-	writeln('------------------------------ Demine moi -------------------------------');
+	writeln('------------------------------ ' + nomJeu + ' -------------------------------');
 	writeln;
 	writeln ('Quelle difficulte voulez-vous?');
 	writeln;
@@ -339,7 +339,7 @@ begin
 	
 		clrscr;
 		GotoXY(1,1);
-		writeln('------------------------------ I Got Rhythm -------------------------------');
+		writeln('------------------------------ ' + nomJeu + ' -------------------------------');
 		GotoXY(1,3);
 		
 		for k := j to j + 20 do

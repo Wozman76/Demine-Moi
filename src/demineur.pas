@@ -8,7 +8,6 @@ var fermeture : Boolean;
 	tabTemps : HighTemps;
 
 BEGIN
-	
 	initConfigJeu;
 	
 	joueur(player);
