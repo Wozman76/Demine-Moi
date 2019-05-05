@@ -5,7 +5,7 @@ unit demiJeu;
 INTERFACE
 uses demiTypes;
 
-procedure initDossierJeu();
+procedure initConfigJeu();
 procedure initialisationGrilleVide(lignes, colonnes : Word; var grille : Grille);
 procedure initialisationGrille(lignes, colonnes : Word; var grille : Grille; curseur : POS; var nbMinesGrille, nbCasesVidesRestantes : Word);
 function caseMine(grille : Grille; curseur : POS) : Boolean;
@@ -19,8 +19,8 @@ uses demiIHM, demiScore, crt, sysutils, DateUtils, httpsend;
 
 
 
-procedure initDossierJeu();
-var httpSender: THTTPSend;
+procedure initConfigJeu();
+var HTTPSender: THTTPSend;
 	HTTPGetResult : Boolean;
 begin
 
@@ -44,11 +44,15 @@ begin
 			
 	if not(DirectoryExists(dossierScores)) then
 		CreateDir(dossierScores);
-		
+	
+	
+	
+	
+	
 	if not(FileExists(fichierCredits)) then
 	begin
+		HTTPGetResult := HTTPSender.HTTPMethod('GET', 'http://mdl-anguier.fr/credits.txt');	
 		HTTPSender := THTTPSend.Create;
-		HTTPGetResult := HTTPSender.HTTPMethod('GET', 'http://mdl-anguier.fr/credits.txt');
 		HTTPSender.Document.SaveToFile(fichierCredits);
 		HTTPSender.Free;
 		

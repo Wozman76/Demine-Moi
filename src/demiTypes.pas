@@ -6,7 +6,7 @@ INTERFACE
 CONST MAX = 100;
 
 var dossierJeu, dossierScores, fichierCredits : AnsiString;
-
+var nomJeu : String;
 
 
 Type Cellule = record
