@@ -1,4 +1,4 @@
-program demineur;
+program DemineMoi;
 
 uses crt, keyboard, demiTypes, demiJeu, demiIHM, demiScore, sysutils;
 
