@@ -338,6 +338,7 @@ begin
 	curseur.y := 1;
 	
 	nbMinesMarquees := 0;
+	bugEntreGuillemets := 0;
 	
 	fin := False;
 	gagne := False;
@@ -347,16 +348,13 @@ begin
 	
 	initialisationGrilleVide(lignes, colonnes, grille2);
 	
-	//affichageGrilleEstMine(grille2, lignes, colonnes);
-	//affichageGrilleNbMines(grille2, lignes, colonnes);
 	affichageInterface(lignes, colonnes);
-	affichageGrille(grille2, lignes, colonnes);
+	affichageGrille(grille2, curseur, lignes, colonnes);
 	
-	
-	choixCase(lignes, colonnes, curseur, marquage);
+	choixCase(grille2, lignes, colonnes, curseur, marquage);
 	initialisationGrille(lignes, colonnes, grille2, curseur, nbMinesGrille, nbCasesVidesrestantes);
 	casesAdjacentes(curseur, lignes, colonnes, grille2, nbCasesVidesrestantes);
-	affichageGrille(grille2, lignes, colonnes);
+	affichageGrille(grille2, curseur, lignes, colonnes);
 	montrerCase(grille2, lignes, colonnes, curseur, nbCasesVidesrestantes);
 	
 	
@@ -364,10 +362,10 @@ begin
 	
 	repeat
 		
-		GotoXY(1,lignes + 5);
+		GotoXY(1,lignes + 3);
 		Writeln('Case(s) non minee(s) restante(s) : ', nbCasesVidesrestantes,' ');
 
-		choixCase(lignes, colonnes, curseur, marquage);
+		choixCase(grille2, lignes, colonnes, curseur, marquage);
 		if marquage then
 		begin
 			marquer(grille2,curseur,nbMinesMarquees);

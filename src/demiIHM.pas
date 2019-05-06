@@ -4,11 +4,10 @@ INTERFACE
 uses demiTypes, keyboard;
 
 
-procedure affichageGrilleEstMine(grille : Grille; lignes, colonnes : Word);
-procedure affichageGrilleNbMines(grille : Grille; lignes, colonnes : Word);
-procedure affichageGrille(grille : Grille; lignes, colonnes : Word);
+procedure affichageGrilleMine(grille : Grille; position : POS; lignes, colonnes : Word);
+procedure affichageGrille(grille : Grille; position : POS; lignes, colonnes : Word);
 procedure affichageInterface(lignes, colonnes : Word);
-procedure choixCase(lignes, colonnes : Word; var curseur : POS; var marquage : Boolean);
+procedure choixCase(grille : Grille; lignes, colonnes : Word; var curseur : POS; var marquage : Boolean);
 procedure montrerCase(grille : Grille; lignes, colonnes : Word; curseur : POS; var nbCasesVidesRestantes : Word);
 procedure marquer(var grille : Grille; curseur : POS; var nbMinesMarquees : Word);
 procedure joueur (var player : Joueur);
@@ -23,36 +22,32 @@ IMPLEMENTATION
 uses crt,demiJeu, sysutils;
 
 
-procedure affichageGrilleEstMine(grille : Grille; lignes, colonnes : Word);
-var i, j : Word;
-begin
-	for i := 1 to lignes do
-		begin
-			for j := 1 to colonnes do
-				write(grille[i][j].estMine, ' ');
-			writeln;
-		end;
-
-
-end;
-
-
-procedure affichageGrilleNbMines(grille : Grille; lignes, colonnes : Word);
+procedure affichageGrilleMine(grille : Grille; position : POS; lignes, colonnes : Word);
 var i, j : Word;
 begin
 	GotoXY(1,1);
 	for i := 1 to lignes do
 		begin
 			for j := 1 to colonnes do
-				write(grille[i][j].nbMine, ' ');
+				if (grille[i][j].estMine) then
+					begin
+						GotoXY(2*j-1,i);
+						TextBackground(Blue);
+						TextColor(Black);
+						write('*' + ' ');
+						TextBackground(Black);
+						TextColor(LightGray);
+					end;
 			writeln;
 		end;
+	GotoXY(2*position.x - 1, position.y);
 
 
 end;
 
 
-procedure affichageGrille(grille : Grille; lignes, colonnes : Word);
+
+procedure affichageGrille(grille : Grille; position : POS; lignes, colonnes : Word);
 var i, j : Word;
 begin
 	GotoXY(1,1);
@@ -76,6 +71,8 @@ begin
 			writeln;
 
 		end;
+		
+	GotoXY(2*position.x - 1, position.y);
 
 end;
 
@@ -93,20 +90,36 @@ end;
 
 
 
-procedure choixCase(lignes, colonnes : Word; var curseur : POS; var marquage : Boolean);
+procedure choixCase(grille : Grille;lignes, colonnes : Word; var curseur : POS; var marquage : Boolean);
 var k : TKeyEvent;
 begin
 	GotoXY(2*curseur.x - 1,curseur.y);
 	repeat
-	k := GetKeyEvent;
-		case GetKeyEventCode(k) of
-			18432 : if (curseur.y > 1) then	curseur.y := curseur.y - 1;		
-			20480 : if (curseur.y < lignes) then curseur.y := curseur.y + 1; 
-			19200 : if (curseur.x > 1) then curseur.x := curseur.x - 1;
-			19712 : if (curseur.x < colonnes) then curseur.x := curseur.x + 1;
-		end;
-	GotoXY(2*curseur.x - 1,curseur.y);
+		k := GetKeyEvent;
+			case GetKeyEventCode(k) of
+				18432 : if (curseur.y > 1) then	curseur.y := curseur.y - 1;		
+				20480 : if (curseur.y < lignes) then curseur.y := curseur.y + 1; 
+				19200 : if (curseur.x > 1) then curseur.x := curseur.x - 1;
+				19712 : if (curseur.x < colonnes) then curseur.x := curseur.x + 1;
+			end;
+		GotoXY(2*curseur.x - 1,curseur.y);
+		if (GetKeyEventCode(k) = 818) then
+			begin
+				
+				if bugEntreGuillemets = 0 then
+					begin
+						bugEntreGuillemets := 1;
+						affichageGrilleMine(grille, curseur, lignes, colonnes);
+					end
+				else
+					begin
+						bugEntreGuillemets := 0;
+						affichageGrille(grille, curseur, lignes, colonnes);
+					end;
+				
+				
 	
+			end;
 	until (GetKeyEventCode(k) = 7181) or (GetKeyEventCode(k) = 14624);
 	
 	if GetKeyEventCode(k) = 14624 then
