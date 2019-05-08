@@ -3,7 +3,7 @@ unit demiJeu;
 
 
 INTERFACE
-uses demiTypes;
+uses demiTypes, demiGetterSetter;
 
 procedure initConfigJeu();
 procedure initialisationGrilleVide(lignes, colonnes : Word; var grille : Grille);
@@ -12,12 +12,13 @@ function caseMine(grille : Grille; curseur : POS) : Boolean;
 procedure casesAdjacentes(position : POS;lignes, colonnes : Word; var grille : Grille; var nbCasesVidesRestantes : Word);
 procedure finDePartie(nbMinesGrille, nbMinesMarquees, nbCasesVidesRestantes : Word; grille : Grille; curseur : POS; var fin, gagne : Boolean);
 procedure lancementPartie(var player : Joueur; var fermeture : Boolean);
+procedure lancementJeu(player : Joueur);
+
 
 
 IMPLEMENTATION
-uses demiIHM, demiScore, crt, sysutils, DateUtils, httpsend;
 
-
+uses demiIHM, demiScore, crt, sysutils, DateUtils, httpsend, keyboard;
 
 procedure initConfigJeu();
 var httpSender: THTTPSend;
@@ -32,12 +33,9 @@ begin
 	dossierJeu := GetEnvironmentVariable('HOME');
 	{$endif}
 	
-	
-	
 	dossierJeu := dossierJeu + '/DemineMoi';
 	dossierScores := dossierJeu + '/scores/';
 	fichierCredits := dossierJeu + '/credits.txt';
-	
 	
 	if not(DirectoryExists(dossierJeu)) then
 		CreateDir(dossierJeu);
@@ -45,20 +43,14 @@ begin
 	if not(DirectoryExists(dossierScores)) then
 		CreateDir(dossierScores);
 	
-	
 	if not(FileExists(fichierCredits)) then
 	begin
 		HTTPSender := THTTPSend.Create;
 		HTTPGetResult := HTTPSender.HTTPMethod('GET', 'http://mdl-anguier.fr/DemineMoi/ressources/credits.txt');
 		HTTPSender.Document.SaveToFile(fichierCredits);
 		HTTPSender.Free;
-
  	end;
-		
 end;
-
-
-
 
 
 
@@ -66,53 +58,62 @@ procedure compterMines(i, j, lignes, colonnes : Word; var grille : Grille);
 begin
 	//+
 	if i > 1 then
-			grille[i - 1][j].nbMine := grille[i - 1][j].nbMine + 1;
+		setNbMine(grille, j, i - 1, getNbMine(grille, j, i - 1) + 1);
+	
 	if i < lignes then
-			grille[i + 1][j].nbMine := grille[i + 1][j].nbMine + 1;
+		setNbMine(grille, j, i + 1, getNbMine(grille, j, i + 1) + 1);
+			
 	if j > 1 then
-			grille[i][j - 1].nbMine := grille[i][j - 1].nbMine + 1;
+		setNbMine(grille, j - 1, i, getNbMine(grille, j - 1, i) + 1);
+	
 	if j < colonnes then
-			grille[i][j + 1].nbMine := grille[i][j + 1].nbMine + 1;
+		setNbMine(grille, j + 1, i, getNbMine(grille, j + 1, i) + 1);
+			
 			
 	//X
 	if (i > 1) and (j > 1) then
-		grille[i-1][j-1].nbMine := grille[i-1][j-1].nbMine + 1;
+		setNbMine(grille, j - 1, i - 1, getNbMine(grille, j - 1, i - 1) + 1);
+		
 	if (i < lignes) and (j < colonnes) then
-		grille[i + 1][j + 1].nbMine := grille[i + 1][j + 1].nbMine + 1;
+		setNbMine(grille, j + 1, i + 1, getNbMine(grille, j + 1, i + 1) + 1);
+			
 	if (i > 1) and (j < colonnes) then
-		grille[i - 1][j + 1].nbMine := grille[i - 1][j + 1].nbMine + 1;
+		setNbMine(grille, j + 1, i - 1, getNbMine(grille, j + 1, i - 1) + 1);
+			
 	if (i < lignes) and (j > 1) then
-		grille[i + 1][j - 1].nbMine := grille[i + 1][j - 1].nbMine + 1;
+		setNbMine(grille, j - 1, i + 1, getNbMine(grille, j - 1, i + 1) + 1);
+			
 end;
+
+
 
 procedure caseContour(position : POS; var hautGauche, haut, hautDroite, droite, basDroite, bas, basGauche, gauche : POS);
 begin
-	hautGauche.x := position.x - 1;
-	hautGauche.y := position.y - 1;
+
+	setPositionX(hautGauche, getPositionX(position) - 1);
+	setPositionY(hautGauche, getPositionY(position) - 1);
 	
-	haut.x := position.x;
-	haut.y := position.y - 1;
+	setPositionX(haut, getPositionX(position));
+	setPositionY(haut, getPositionY(position) - 1);
 	
-	hautDroite.x := position.x + 1;
-	hautDroite.y := position.y - 1;
+	setPositionX(hautDroite, getPositionX(position) + 1);
+	setPositionY(hautDroite, getPositionY(position) - 1);
 	
-	droite.x := position.x + 1;
-	droite.y := position.y;
+	setPositionX(droite, getPositionX(position) + 1);
+	setPositionY(droite, getPositionY(position));
 	
-	basDroite.x := position.x + 1;
-	basDroite.y := position.y + 1;
+	setPositionX(basDroite, getPositionX(position) + 1);
+	setPositionY(basDroite, getPositionY(position) + 1);
 	
-	bas.x := position.x;
-	bas.y := position.y + 1;
+	setPositionX(bas, getPositionX(position));
+	setPositionY(bas, getPositionY(position) + 1);
 	
-	basGauche.x := position.x - 1;
-	basGauche.y := position.y + 1;
+	setPositionX(basGauche, getPositionX(position) - 1);
+	setPositionY(basGauche, getPositionY(position) + 1);
 	
-	gauche.x := position.x - 1;
-	gauche.y := position.y;
+	setPositionX(gauche, getPositionX(position) - 1);
+	setPositionY(gauche, getPositionY(position));
 end;
-
-
 
 
 
@@ -131,23 +132,25 @@ begin
 end;
 
 
+
 procedure initialisationGrille(lignes, colonnes : Word; var grille : Grille; curseur : POS; var nbMinesGrille, nbCasesVidesRestantes : Word);
 var i, j, k : Word;
-	cellZero : Cellule;
 	hautGauche, haut, hautDroite, droite, basDroite, bas, basGauche, gauche : POS;
 begin
 	i := 1;
 	j := 1;
 	randomize;
 	
-	cellZero.estMine := False;
-	cellZero.estVisible := False;
-	cellZero.estMarquee := False;
-	cellZero.nbMine := 0;
+
 
 	for i := 1 to lignes do
 		for j := 1 to colonnes do
-			grille[i][j] := cellZero;
+			begin
+				setEstMine(grille, j, i, False);
+				setEstVisible(grille, j, i, False);
+				setEstMarquee(grille, j, i, False);
+				setNbMine(grille, j, i, 0);
+			end;
 	
 	
 	caseContour(curseur, hautGauche, haut, hautDroite, droite, basDroite, bas, basGauche, gauche);
@@ -160,19 +163,16 @@ begin
 			repeat
 				i := random(lignes) + 1;
 				j := random(colonnes) + 1;
-			until (not(grille[i][j].estMine)) and (i <> curseur.y) and (j <> curseur.x) and (i <> hautGauche.y) and (j <> hautGauche.x) and (i <> haut.y) and (j <> haut.x) and (i <> hautDroite.y) and (j <> hautDroite.x) and (i <> droite.y) and (j <> droite.x) and (i <> basDroite.y) and (j <> basDroite.x) and (i <> bas.y) and (j <> bas.x) and (i <> basGauche.y) and (j <> basGauche.x) and (i <> gauche.y) and (j <> gauche.x);
-			grille[i][j].estMine := True;
+			until (not(getEstMine(grille,j,i)) and (i <> getPositionY(curseur)) and (j <> getPositionX(curseur)) and (i <> getPositionY(hautGauche)) and (j <> getPositionX(hautGauche)) and (i <> getPositionY(haut)) and (j <> getPositionX(haut)) and (i <> getPositionY(hautDroite)) and (j <> getPositionX(hautDroite)) and (i <> getPositionY(droite)) and (j <> getPositionX(droite)) and (i <> getPositionY(basDroite)) and (j <> getPositionX(basDroite)) and (i <> getPositionY(bas)) and (j <> getPositionX(bas)) and (i <> getPositionY(basGauche)) and (j <> getPositionX(basGauche)) and (i <> getPositionY(gauche)) and (j <> getPositionX(gauche)));
+			
+			setEstMine(grille, j, i, True);
 			compterMines(i, j, lignes, colonnes, grille);
-		end;
-		
-
-		
+		end;	
 		
 	for i := 1 to lignes do
 		for j := 1 to colonnes do
-			if grille[i][j].estMine then
-				grille[i][j].nbMine := 0	;		
-	
+			if getEstMine(grille, j, i) then
+				setNbMine(grille, j, i, 0);		
 	
 end;
 
@@ -180,86 +180,74 @@ end;
 
 function caseMine(grille : Grille; curseur : POS) : Boolean;
 begin
-	caseMine := grille[curseur.y][curseur.x].estMine;
-
-	
+	caseMine := getEstMine(grille, getPositionX(curseur), getPositionY(curseur));
 end;
-
 
 
 
 procedure afficherNbMinesAdjacentes(var grille : Grille; lignes, colonnes : Word; position : POS; var nbCasesVidesRestantes : Word);
 var hautGauche,	haut, hautDroite, droite, basDroite, bas, basGauche, gauche : POS;
 begin
+
 	caseContour(position, hautGauche, haut, hautDroite, droite, basDroite, bas, basGauche, gauche);
 	
-	if position.x > 1 then
+	if getPositionX(position) > 1 then
 	begin
-		if not(grille[gauche.y][gauche.x].estMine) and (grille[gauche.y][gauche.x].nbMine <> 0) and not(grille[gauche.y][gauche.x].estVisible)  then
+		if not(getEstMine(grille, getPositionX(gauche), getPositionY(gauche))) and (getNbMine(grille, getPositionX(gauche), getPositionY(gauche)) <> 0) and not(getEstVisible(grille, getPositionX(gauche), getPositionY(gauche)))  then
 		begin
 			nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
-			grille[gauche.y][gauche.x].estVisible := True;
+			setEstVisible(grille, getPositionX(gauche), getPositionY(gauche), True);
 		end;
-		if position.y > 1 then
-			if not(grille[hautGauche.y][hautGauche.x].estMine) and (grille[hautGauche.y][hautGauche.x].nbMine <> 0) and not(grille[hautGauche.y][hautGauche.x].estVisible) then
+		if getPositionY(position) > 1 then
+			if not(getEstMine(grille, getPositionX(hautGauche), getPositionY(hautGauche))) and (getNbMine(grille, getPositionX(hautGauche), getPositionY(hautGauche)) <> 0) and not(getEstVisible(grille, getPositionX(hautGauche), getPositionY(hautGauche))) then
 			begin
 				nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
-				grille[hautGauche.y][hautGauche.x].estVisible := True;
+				setEstVisible(grille, getPositionX(hautGauche), getPositionY(hautGauche), True);
 			end;
-		if position.y < lignes then
-			if not(grille[basGauche.y][basGauche.x].estMine) and (grille[basGauche.y][basGauche.x].nbMine <> 0) and not(grille[basGauche.y][basGauche.x].estVisible) then
+		if getPositionY(position) < lignes then
+			if not(getEstMine(grille, getPositionX(basGauche), getPositionY(basGauche))) and (getNbMine(grille, getPositionX(basGauche), getPositionY(basGauche)) <> 0) and not(getEstVisible(grille, getPositionX(basGauche), getPositionY(basGauche))) then
 			begin
 				nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
-				grille[basGauche.y][basGauche.x].estVisible := True;
+				setEstVisible(grille, getPositionX(basGauche), getPositionY(basGauche), True);
 			end;
 	end;
 	
 	
-	if position.x < colonnes then
+	if getPositionX(position) < colonnes then
 	begin
-		if not(grille[droite.y][droite.x].estMine) and (grille[droite.y][droite.x].nbMine <> 0) and not(grille[droite.y][droite.x].estVisible) then
+		if not(getEstMine(grille, getPositionX(droite), getPositionY(droite))) and (getNbMine(grille, getPositionX(droite), getPositionY(droite)) <> 0) and not(getEstVisible(grille, getPositionX(droite), getPositionY(droite))) then
 		begin
 			nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
-			grille[droite.y][droite.x].estVisible := True;
+			setEstVisible(grille, getPositionX(droite), getPositionY(droite), True);
 		end;
-		if position.y > 1 then
-			if not(grille[hautDroite.y][hautDroite.x].estMine) and (grille[hautDroite.y][hautDroite.x].nbMine <> 0) and not(grille[hautDroite.y][hautDroite.x].estVisible) then
+		if getPositionY(position) > 1 then
+			if not(getEstMine(grille, getPositionX(hautDroite), getPositionY(hautDroite))) and (getNbMine(grille, getPositionX(hautDroite), getPositionY(hautDroite)) <> 0) and not(getEstVisible(grille, getPositionX(hautDroite), getPositionY(hautDroite))) then
 			begin
 				nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
-				grille[hautDroite.y][hautDroite.x].estVisible := True;
+				setEstVisible(grille, getPositionX(hautDroite), getPositionY(hautDroite), True);
 			end;
-		if position.y < lignes then
-			if not(grille[basDroite.y][basDroite.x].estMine) and (grille[basDroite.y][basDroite.x].nbMine <> 0) and not(grille[basDroite.y][basDroite.x].estVisible) then
+		if getPositionY(position) < lignes then
+			if not(getEstMine(grille, getPositionX(basDroite), getPositionY(basDroite))) and (getNbMine(grille, getPositionX(basDroite), getPositionY(basDroite)) <> 0) and not(getEstVisible(grille, getPositionX(basDroite), getPositionY(basDroite))) then
 			begin
 				nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
-				grille[basDroite.y][basDroite.x].estVisible := True;
+				setEstVisible(grille, getPositionX(basDroite), getPositionY(basDroite), True);
 			end;
 	end;
-	
 	
 	
 	if position.y > 1 then
-		if not(grille[haut.y][haut.x].estMine) and (grille[haut.y][haut.x].nbMine <> 0) and not(grille[haut.y][haut.x].estVisible) then
+		if not(getEstMine(grille, getPositionX(haut), getPositionY(haut))) and (getNbMine(grille, getPositionX(haut), getPositionY(haut)) <> 0) and not(getEstVisible(grille, getPositionX(haut), getPositionY(haut))) then
 		begin
 			nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
-			grille[haut.y][haut.x].estVisible := True;
+			setEstVisible(grille, getPositionX(haut), getPositionY(haut), True);
 		end;
 		
 	if position.y < lignes then
-		if not(grille[bas.y][bas.x].estMine) and (grille[bas.y][bas.x].nbMine <> 0) and not(grille[bas.y][bas.x].estVisible) then
+		if not(getEstMine(grille, getPositionX(bas), getPositionY(bas))) and (getNbMine(grille, getPositionX(bas), getPositionY(bas)) <> 0) and not(getEstVisible(grille, getPositionX(bas), getPositionY(bas))) then
 		begin
 			nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
-			grille[bas.y][bas.x].estVisible := True;
+			setEstVisible(grille, getPositionX(bas), getPositionY(bas), True);
 		end;
-	
-	
-		
-	
-	
-	
-	
-	
-	
 end;
 
 
@@ -267,12 +255,11 @@ end;
 procedure casesAdjacentes(position : POS;lignes, colonnes : Word; var grille : Grille; var nbCasesVidesRestantes : Word);
 var hautGauche,	haut, hautDroite, droite, basDroite, bas, basGauche, gauche : POS;
 begin
-
 	caseContour(position, hautGauche, haut, hautDroite, droite, basDroite, bas, basGauche, gauche);
 	
-	if (grille[position.y][position.x].estMine = False) and (grille[position.y][position.x].nbMine = 0) and (grille[position.y][position.x].estVisible = False) and (position.x >= 1) and (position.x <= colonnes) and (position.y >= 1) and (position.y <= lignes) then
+	if not(getEstMine(grille, getPositionX(position), getPositionY(position))) and (getNbMine(grille, getPositionX(position), getPositionY(position)) = 0) and not(getEstVisible(grille, getPositionX(position), getPositionY(position))) and (getPositionX(position) >= 1) and (getPositionX(position) <= colonnes) and (getPositionY(position) >= 1) and (getPositionY(position) <= lignes) then
 	begin
-		grille[position.y][position.x].estVisible := True;
+		setEstVisible(grille, getPositionX(position), getPositionY(position), True);
 		nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
 		afficherNbMinesAdjacentes(grille, lignes, colonnes, position, nbCasesVidesRestantes);
 		casesAdjacentes(hautGauche, lignes, colonnes, grille,nbCasesVidesRestantes);
@@ -283,13 +270,9 @@ begin
 		casesAdjacentes(bas, lignes, colonnes, grille,nbCasesVidesRestantes);
 		casesAdjacentes(basGauche, lignes, colonnes, grille,nbCasesVidesRestantes);
 		casesAdjacentes(gauche, lignes, colonnes, grille,nbCasesVidesRestantes);
-
-		
 	end;
-
-
-
 end;
+
 
 
 procedure finDePartie(nbMinesGrille, nbMinesMarquees, nbCasesVidesRestantes : Word; grille : Grille; curseur : POS; var fin, gagne : Boolean);
@@ -297,7 +280,6 @@ begin
 	fin := caseMine(grille, curseur) or (nbCasesVidesRestantes = 0);
 	gagne := (nbCasesVidesRestantes = 0);
 end;
-
 
 
 
@@ -309,9 +291,8 @@ var niveau, nbTemps, lignes, colonnes, nbMinesMarquees, nbMinesGrille, nbCasesVi
 	grille2 : Grille;
 	marquage, fin, gagne : Boolean;
 	tabTemps : HighTemps;
-	
 begin
-	difficulte(player, niveau);
+	difficulte(niveau);
 	
 	afficherHighTemps(player, tabTemps, nbTemps, niveau);
 	sleep(3000);
@@ -331,11 +312,8 @@ begin
 			end;
 	end;
 	
-	
-
-	
-	curseur.x := 1;
-	curseur.y := 1;
+	setPositionX(curseur, 1);
+	setPositionY(curseur, 1);
 	
 	nbMinesMarquees := 0;
 	bugEntreGuillemets := 0;
@@ -343,8 +321,6 @@ begin
 	fin := False;
 	gagne := False;
 	marquage := False;
-	
-	
 	
 	initialisationGrilleVide(lignes, colonnes, grille2);
 	
@@ -356,7 +332,6 @@ begin
 	casesAdjacentes(curseur, lignes, colonnes, grille2, nbCasesVidesrestantes);
 	affichageGrille(grille2, curseur, lignes, colonnes);
 	montrerCase(grille2, lignes, colonnes, curseur, nbCasesVidesrestantes);
-	
 	
 	tempsDeb := Now;
 	
@@ -380,11 +355,7 @@ begin
 
 	until fin;
 	
-	
 	temps := MilliSecondsBetween(Now, tempsDeb);
-	
-	
-
 	
 	sleep(2000);
 	clrscr;
@@ -405,6 +376,40 @@ begin
 		
 	nouvellePartie(fermeture, player);
 end;
-	
-END.
 
+
+
+procedure lancementJeu(player : Joueur);
+var fermeture : Boolean;
+	choixMenu, niveau, nbTemps : Word;
+	tabTemps : HighTemps;
+begin
+	fermeture := False;
+	repeat
+		menu(choixMenu, player);
+
+		case choixMenu of
+				1 : lancementPartie(player, fermeture);  //lance la partie si le choix est 1
+				2 : begin
+						difficulte(niveau);
+						afficherHightemps(player, tabTemps, nbTemps, niveau);   //affiche les meilleurs scores pour la musique sélectionnée
+						writeln;
+						writeln;
+						writeln('Appuyez sur [ESPACE] pour continuer...');
+						while GetKeyEventCode(GetKeyEvent()) <> 14624 do   //tant qu'on appuie pas sur [espace], le programme attend
+							sleep(10);
+				
+						clrscr;
+					end;
+				3 : credits();
+				4 : begin
+						fermeture := True;
+						quit(player);
+					end;
+			end;
+			
+	until fermeture;
+end;
+
+
+END.

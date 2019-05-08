@@ -1,7 +1,7 @@
 unit demiIHM;
 
 INTERFACE
-uses demiTypes, keyboard;
+uses demiTypes, keyboard, demiGetterSetter;
 
 
 procedure affichageGrilleMine(grille : Grille; position : POS; lignes, colonnes : Word);
@@ -12,10 +12,12 @@ procedure montrerCase(grille : Grille; lignes, colonnes : Word; curseur : POS; v
 procedure marquer(var grille : Grille; curseur : POS; var nbMinesMarquees : Word);
 procedure joueur (var player : Joueur);
 procedure menu(var choixMenu : Word; player : Joueur);
-procedure difficulte(player : Joueur; var niveau : Word);
+procedure difficulte(var niveau : Word);
 procedure credits();
 procedure nouvellePartie(var fermeture : Boolean; player : Joueur);
 procedure quit(player : Joueur);
+procedure afficherTemps(temps : LongWord);
+procedure afficherHighTemps(var player : Joueur; var tabTemps : HighTemps; var nbTemps : Word; niveau : word);
 
 IMPLEMENTATION
 
@@ -29,7 +31,7 @@ begin
 	for i := 1 to lignes do
 		begin
 			for j := 1 to colonnes do
-				if (grille[i][j].estMine) then
+				if getEstMine(grille,j,i) then
 					begin
 						GotoXY(2*j-1,i);
 						TextBackground(Blue);
@@ -40,7 +42,7 @@ begin
 					end;
 			writeln;
 		end;
-	GotoXY(2*position.x - 1, position.y);
+	GotoXY(2*getPositionX(position) - 1, getPositionY(position));
 
 
 end;
@@ -55,9 +57,9 @@ begin
 	for i := 1 to lignes do
 		begin
 			for j := 1 to colonnes do
-				if grille[i][j].estVisible then
-					if not(grille[i][j].estMine) then
-						write(grille[i][j].nbMine, ' ')
+				if getEstVisible(grille,j,i) then
+					if not(getEstMine(grille,j,i)) then
+						write(getNbMine(grille,j,i), ' ')
 					else 
 						write('*' + ' ')
 				else 
@@ -72,9 +74,10 @@ begin
 
 		end;
 		
-	GotoXY(2*position.x - 1, position.y);
+	GotoXY(2*getPositionX(position) - 1, getPositionY(position));
 
 end;
+
 
 
 procedure affichageInterface(lignes, colonnes : Word);
@@ -93,19 +96,22 @@ end;
 procedure choixCase(grille : Grille;lignes, colonnes : Word; var curseur : POS; var marquage : Boolean);
 var k : TKeyEvent;
 begin
-	GotoXY(2*curseur.x - 1,curseur.y);
+	GotoXY(2*getPositionX(curseur) - 1,getPositionY(curseur));
 	repeat
+	
 		k := GetKeyEvent;
-			case GetKeyEventCode(k) of
-				18432 : if (curseur.y > 1) then	curseur.y := curseur.y - 1;		
-				20480 : if (curseur.y < lignes) then curseur.y := curseur.y + 1; 
-				19200 : if (curseur.x > 1) then curseur.x := curseur.x - 1;
-				19712 : if (curseur.x < colonnes) then curseur.x := curseur.x + 1;
-			end;
-		GotoXY(2*curseur.x - 1,curseur.y);
+		
+		case GetKeyEventCode(k) of
+			18432 : if (getPositionY(curseur) > 1) then	setPositionY(curseur,getPositionY(curseur) - 1);		
+			20480 : if (getPositionY(curseur) < lignes) then setPositionY(curseur,getPositionY(curseur) + 1); 
+			19200 : if (getPositionX(curseur) > 1) then setPositionX(curseur, getPositionX(curseur) - 1);
+			19712 : if (getPositionX(curseur) < colonnes) then setPositionX(curseur, getPositionX(curseur) + 1);
+		end;
+		
+		GotoXY(2*getPositionX(curseur) - 1,getPositionY(curseur));
+		
 		if (GetKeyEventCode(k) = 818) then
 			begin
-				
 				if bugEntreGuillemets = 0 then
 					begin
 						bugEntreGuillemets := 1;
@@ -116,10 +122,8 @@ begin
 						bugEntreGuillemets := 0;
 						affichageGrille(grille, curseur, lignes, colonnes);
 					end;
-				
-				
-	
 			end;
+			
 	until (GetKeyEventCode(k) = 7181) or (GetKeyEventCode(k) = 14624);
 	
 	if GetKeyEventCode(k) = 14624 then
@@ -128,9 +132,10 @@ begin
 end;
 
 
+
 procedure montrerCase(grille : Grille; lignes, colonnes : Word; curseur : POS; var nbCasesVidesRestantes : Word);
 begin
-	if grille[curseur.y][curseur.x].estMine then
+	if getEstMine(grille,getPositionX(curseur),getPositionY(curseur)) then
 		begin
 			TextBackground(Red);
 			TextColor(Black);
@@ -142,43 +147,46 @@ begin
 			
 	else
 		begin
-			GotoXY(2*curseur.x - 1,curseur.y);
-			write(grille[curseur.y][curseur.x].nbMine, ' ');
+			GotoXY(2*getPositionX(curseur) - 1,getPositionY(curseur));
+			write(getNbMine(grille,getPositionX(curseur),getPositionY(curseur)), ' ');
 			nbCasesVidesRestantes := nbCasesVidesRestantes - 1;
 		end;
 end;
 
 
+
 procedure marquer(var grille : Grille; curseur : POS; var nbMinesMarquees : Word);
 begin
-	if not(grille[curseur.y][curseur.x].estVisible) then
-		if grille[curseur.y][curseur.x].estMarquee then
+	if not(getEstVisible(grille,getPositionX(curseur),getPositionY(curseur))) then
+		if getEstMarquee(grille,getPositionX(curseur),getPositionY(curseur)) then
 		begin
-			grille[curseur.y][curseur.x].estMarquee := False;
+			setEstMine(grille,getPositionX(curseur),getPositionY(curseur), False);
 			TextBackground(Green);
 			TextColor(Black);
 			write('#' + ' ');
 			TextBackground(Black);
 			TextColor(LightGray);
-			if grille[curseur.y][curseur.x].estMine then
+			if getEstMine(grille,getPositionX(curseur),getPositionY(curseur)) then
 				nbMinesMarquees := nbMinesMarquees - 1;
 		end
 		else
 		begin
-			grille[curseur.y][curseur.x].estMarquee := True;
+			setEstMarquee(grille,getPositionX(curseur),getPositionY(curseur), True);
 			TextBackground(White);
 			TextColor(Black);
 			write('@');
 			TextBackground(Black);
 			TextColor(LightGray);
 			write(' ');
-			if grille[curseur.y][curseur.x].estMine then
+			if getEstMine(grille,getPositionX(curseur),getPositionY(curseur)) then
 				nbMinesMarquees := nbMinesMarquees + 1;
 		end;
 end;
 
 
+
 procedure joueur (var player : Joueur);
+var nom : String;
 begin
 
 	clrscr;
@@ -187,13 +195,14 @@ begin
 	writeln('Bonjour ! Quel est votre nom?');
 	writeln;
 	write('> ');
-	readln(player.nom);
+	readln(nom);
+	setNomJoueur(player, nom);
 	clrscr;
 
 end;
 
 
-{affiche le menu}
+
 procedure menu(var choixMenu : Word; player : Joueur);
 var y, j, nbMenu : Word;
 	k : TKeyEvent;
@@ -210,7 +219,7 @@ begin
 	clrscr;
 	writeln('------------------------------ ' + nomJeu + ' -------------------------------');
 	writeln;
-	writeln('Bonjour ' + player.nom + ' ! Que voulez-vous faire ?');
+	writeln('Bonjour ' + getNomJoueur(player) + ' ! Que voulez-vous faire ?');
 	writeln;
 	TextBackground(White);
 	TextColor(Black);
@@ -221,13 +230,12 @@ begin
 	for j := 2 to nbMenu do
 			writeln('- ' + tab[j]);
 	
-	
 	repeat 
 	
 		k := GetKeyEvent;
 		case GetKeyEventCode(k) of
-			18432 : if (y > 5) then	y := y - 1;		//test si touche appuyée est [UP] et si possibilité de monter dans le menu
-			20480 : if (y < 4 + nbMenu) then y := y + 1; //test si touche appuyée est [DOWN] et si possibilité de descendre dans le menu
+			18432 : if (y > 5) then	y := y - 1;		
+			20480 : if (y < 4 + nbMenu) then y := y + 1; 
 		end;
 		
 		
@@ -237,30 +245,23 @@ begin
 					begin
 						TextBackground(White);
 						TextColor(Black);
-						writeln('- ' + tab[j]);     //change couleur de la ligne sélectionnée
+						writeln('- ' + tab[j]);     
 						TextBackground(Black);
 						TextColor(LightGray);
 						
 	
 					end
-				else writeln('- ' + tab[j]);   //réécrit les autres lignes dans le style par défaut
+				else writeln('- ' + tab[j]);   
 	
 		
-	until GetKeyEventCode(k) = 7181;  //s'arrête lorsque la touche [entrée] est pressée
+	until GetKeyEventCode(k) = 7181;  
 	
-	choixMenu := y - 4; // récupère le numéro du menu pour savoir quelle procédure lancer
-
-
-
-
+	choixMenu := y - 4; 
 end;
 
 
 
-
-
-{choix de la difficultée (même pricipe que pour le menu)}
-procedure difficulte(player : Joueur; var niveau : Word);
+procedure difficulte(var niveau : Word);
 var nbDiff, y, j : Word;
 	k : TKeyEvent;
 	tab : MenuDiffTab;
@@ -284,20 +285,19 @@ begin
 	writeln('- ' + tab[1]);
 	TextBackground(Black);
 	TextColor(LightGray);
+	
 	for j := 2 to nbDiff do
 		writeln('- ' + tab[j]);
 	
-	
-	repeat	
-	
+	repeat
 		k := GetKeyEvent;
 		case GetKeyEventCode(k) of
 			18432 : if (y > 5) then	y := y - 1;		
 			20480 : if (y < 7) then y := y + 1;
 		end;
 		
-		
-	GotoXY(1,5);
+		GotoXY(1,5);
+	
 		for j := 1 to 3 do
 			if j = y - 4 then
 				begin
@@ -306,20 +306,15 @@ begin
 					writeln('- ' + tab[j]);
 					TextBackground(Black);
 					TextColor(LightGray);
-					
-
 				end
-			else writeln('- ' + tab[j]);
-		
+			else 
+				writeln('- ' + tab[j]);
 		
 	until GetKeyEventCode(k) = 7181; 
 	
 	niveau := y - 4;
 	
-
-	
 	clrscr;
-	
 end;
 
 procedure credits();
@@ -332,11 +327,9 @@ begin
 	i := 1;
 	j := 1;
 	
-	
 	arret := False;
 	assign(fichier, fichierCredits);
 	
-
 	reset(fichier);
 	
 	while not(eof(fichier)) do
@@ -347,7 +340,6 @@ begin
 	
 	close(fichier);
 	
-	
 	repeat 
 	
 		clrscr;
@@ -356,32 +348,30 @@ begin
 		GotoXY(1,3);
 		
 		for k := j to j + 20 do
-			begin
+		begin
 			if tab[k] = 'FIN' then
 					arret := True
-			else writeln(tab[k]);
-			end;
+			else 
+				writeln(tab[k]);
+		end;
 	
 		sleep(300);
 		j := j + 1;
 	
-	
-	
-	
 	until arret;
 	
 	sleep(3000);
-	
-	
 end;
+
 
 
 procedure quit(player : Joueur);
 begin
 	writeln;
-	writeln('Au revoir, ' + player.nom);
+	writeln('Au revoir, ' + getNomJoueur(player));
 	sleep(3000);
 end;
+
 
 
 procedure nouvellePartie(var fermeture : Boolean; player : Joueur);
@@ -392,7 +382,6 @@ begin
 	writeln;
 	writeln;
 	writeln('Voulez-vous rejouer? o (oui) / n (non)');
-	
 	
 	repeat
 	
@@ -407,7 +396,8 @@ begin
 						fermeture := True;
 						choixFin := True;
 					end;
-		else writeln('Mauvaise touche...');
+		else 
+			writeln('Mauvaise touche...');
 		end;
 		
 	until choixFin;
@@ -416,6 +406,58 @@ begin
 		quit(player);
 end;
 
+
+
+procedure afficherTemps(temps : LongWord);
+begin
+	GotoXY(1, 20);
+	writeln('Vous avez fait : ', temps);
+end;
+
+
+
+procedure afficherHighTemps(var player : Joueur; var tabTemps : HighTemps; var nbTemps : Word; niveau : word);
+var fichier : File of Joueur;
+	j : Word;
+	difficulte : String;
+	fichierScores : AnsiString;
+begin
+
+	nbTemps := 0;
+	
+	case niveau of
+		1 : difficulte := 'facile';
+		2 : difficulte := 'medium';
+		3 : difficulte := 'difficile';
+	end;
+	
+	
+	fichierScores := dossierScores + difficulte + '_scores.dat';
+	
+	writeln('Liste des meilleurs scores :');
+	writeln;
+
+	writeln('Scores pour ' + difficulte +' :');
+	writeln;
+	
+	assign(fichier, fichierScores);  
+	
+	if not(FileExists(fichierScores)) then
+		rewrite(fichier)
+	else 
+		reset(fichier);
+		
+	while not(eof(fichier)) do
+		begin
+			nbTemps := nbTemps + 1; 
+			read(fichier, tabTemps[nbTemps]);
+			writeln('- ', getNomJoueur(tabTemps[nbTemps]), ' : ', getTempsJoueur(tabTemps[nbTemps]));
+		end;
+		
+	close(fichier);
+	
+	for j := 1 to nbTemps do
+		writeln;
+end;
 	
 END.
-

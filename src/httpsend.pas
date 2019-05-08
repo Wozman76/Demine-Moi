@@ -63,7 +63,7 @@ Used RFC: RFC-1867, RFC-1947, RFC-2388, RFC-2616
   {$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 {$ENDIF}
 
-unit httpsendLinux;
+unit httpsend;
 
 interface
 
