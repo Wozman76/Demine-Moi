@@ -389,14 +389,14 @@ begin
 		menu(choixMenu, player);
 
 		case choixMenu of
-				1 : lancementPartie(player, fermeture);  //lance la partie si le choix est 1
+				1 : lancementPartie(player, fermeture);  
 				2 : begin
 						difficulte(niveau);
-						afficherHightemps(player, tabTemps, nbTemps, niveau);   //affiche les meilleurs scores pour la musique sélectionnée
+						afficherHightemps(player, tabTemps, nbTemps, niveau);   
 						writeln;
 						writeln;
 						writeln('Appuyez sur [ESPACE] pour continuer...');
-						while GetKeyEventCode(GetKeyEvent()) <> 14624 do   //tant qu'on appuie pas sur [espace], le programme attend
+						while GetKeyEventCode(GetKeyEvent()) <> 14624 do   
 							sleep(10);
 				
 						clrscr;
