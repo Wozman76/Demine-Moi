@@ -46,7 +46,7 @@ begin
 	if not(FileExists(fichierCredits)) then
 	begin
 		HTTPSender := THTTPSend.Create;
-		HTTPGetResult := HTTPSender.HTTPMethod('GET', 'http://mdl-anguier.fr/DemineMoi/ressources/credits.txt');
+		HTTPGetResult := HTTPSender.HTTPMethod('GET', 'https://wozman.fr/DemineMoi/ressources/credits.txt');
 		HTTPSender.Document.SaveToFile(fichierCredits);
 		HTTPSender.Free;
  	end;
